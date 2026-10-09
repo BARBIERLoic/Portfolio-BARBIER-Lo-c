@@ -336,6 +336,7 @@
   <div class="brand"><span class="dot"></span>Portfolio QLIO</div>
   <nav class="tabs" id="tabs">
     <button class="tab active" data-tab="accueil">Accueil</button>
+    <button class="tab" data-tab="entreprise">Mon entreprise</button>
     <button class="tab" data-tab="qualite">Compétences Qualité</button>
     <button class="tab" data-tab="logistique">Compétences Logistique industrielle</button>
     <button class="tab" data-tab="organisation">Compétences Organisation</button>
@@ -381,6 +382,7 @@
   </section>
 
   <!-- COMPETENCY PAGES: filled by JS -->
+  <section class="page" id="page-entreprise"></section>
   <section class="page" id="page-qualite"></section>
   <section class="page" id="page-logistique"></section>
   <section class="page" id="page-organisation"></section>
@@ -419,7 +421,19 @@
       organisation: {desc:PAGE_DEFS.organisation.desc},
       mp:           {desc:PAGE_DEFS.mp.desc}
     },
-    acs: {}
+    acs: {},
+    company: {
+      nom: 'Nom de l’entreprise',
+      secteur: 'Secteur d’activité · Ville',
+      presentation: 'Présente ici l’entreprise : son activité, sa taille, ses produits ou services, son organisation et ce qui la distingue.',
+      poste: 'Intitulé de mon poste en alternance',
+      missions: [
+        'Une mission ou un projet que tu mènes en entreprise',
+        'Les outils, méthodes ou logiciels que tu utilises',
+        'Ce que cette expérience t’apporte'
+      ],
+      images: []
+    }
   };
 
   // Référentiel : niveaux et apprentissages critiques de chaque compétence / option
@@ -539,6 +553,7 @@
   function saveHome(){ saveKey('home', state.home); }
   function savePage(key){ saveKey('page:'+key, state.pages[key]); }
   function saveAcs(){ saveKey('acs', state.acs); }
+  function saveCompany(){ saveKey('company', state.company); }
 
   // ---------- image resize helper ----------
   function readAndResizeImage(file, maxW){
@@ -617,7 +632,7 @@
     headers['Prefer'] = 'resolution=merge-duplicates,return=minimal';
     return fetch(REMOTE.url + '/rest/v1/portfolio?on_conflict=id', {
       method:'POST', headers: headers,
-      body: JSON.stringify({id:'main', data:{home: state.home, pages: state.pages, acs: state.acs}})
+      body: JSON.stringify({id:'main', data:{home: state.home, pages: state.pages, acs: state.acs, company: state.company}})
     }).then(function(r){
       if(r.status === 401 && !retried){ return refreshSession().then(function(){ return pushRemote(true); }); }
       if(!r.ok) throw new Error('HTTP ' + r.status);
@@ -683,9 +698,12 @@
     });
     var acData = pub ? pub.acs : loadKey('acs', null);
     if(acData) state.acs = acData;
+    var companyData = pub ? pub.company : loadKey('company', null);
+    if(companyData) state.company = companyData;
 
     renderHome();
     keys.forEach(renderCompetencyPage);
+    renderCompanyPage();
     bindNav();
     if(!staticPub){ bindEditToggle(); if(!REMOTE) bindExport(); }
     if(REMOTE) bindLogin();
@@ -784,6 +802,79 @@
       pageState.desc = descEl.textContent.trim();
       savePage(key);
     });
+    applyEditModeToSection(section);
+  }
+
+  // ---------- page « Mon entreprise » ----------
+  function renderCompanyPage(){
+    var section = document.getElementById('page-entreprise');
+    var c = state.company;
+    if(!c.missions) c.missions = ['', '', ''];
+    if(!c.images) c.images = [];
+
+    section.innerHTML =
+      '<div class="page-head">' +
+        '<span class="pillar-label">Mon alternance</span>' +
+        '<h2 contenteditable="false" data-field="nom">' + escapeHtml(c.nom) + '</h2>' +
+        '<p class="desc" contenteditable="false" data-field="secteur">' + escapeHtml(c.secteur) + '</p>' +
+      '</div>' +
+      '<div class="ac-card" style="border-left-color:var(--orange);">' +
+        '<div class="ac-practice-label">Présentation de l’entreprise</div>' +
+        '<p class="ac-reformulation" contenteditable="false" data-field="presentation">' + escapeHtml(c.presentation) + '</p>' +
+        '<div class="ac-practice-label">Mon poste</div>' +
+        '<div class="ac-competence" contenteditable="false" data-field="poste">' + escapeHtml(c.poste) + '</div>' +
+        '<ul class="ac-practice">' +
+          '<li contenteditable="false" data-field="m0">' + escapeHtml(c.missions[0]) + '</li>' +
+          '<li contenteditable="false" data-field="m1">' + escapeHtml(c.missions[1]) + '</li>' +
+          '<li contenteditable="false" data-field="m2">' + escapeHtml(c.missions[2]) + '</li>' +
+        '</ul>' +
+        '<div class="ac-images" data-role="images"></div>' +
+        '<button type="button" class="ac-add-img" data-role="addimg">+ Ajouter des images (logo, locaux, produits…)</button>' +
+        '<input type="file" accept="image/*" multiple data-role="imginput">' +
+      '</div>';
+
+    function f(name){ return section.querySelector('[data-field="' + name + '"]'); }
+    var els = ['nom','secteur','presentation','poste','m0','m1','m2'].map(f);
+    function commit(){
+      c.nom = f('nom').textContent.trim() || 'Nom de l’entreprise';
+      c.secteur = f('secteur').textContent.trim();
+      c.presentation = f('presentation').textContent.trim();
+      c.poste = f('poste').textContent.trim();
+      c.missions = [f('m0').textContent.trim(), f('m1').textContent.trim(), f('m2').textContent.trim()];
+      saveCompany();
+    }
+    els.forEach(function(el){ el.addEventListener('blur', commit); });
+
+    var imgBox = section.querySelector('[data-role="images"]');
+    function renderImages(){
+      imgBox.innerHTML = '';
+      c.images.forEach(function(src, i){
+        var wrap = document.createElement('div');
+        wrap.className = 'ac-img';
+        var img = document.createElement('img');
+        img.src = src; img.alt = 'Entreprise — image ' + (i + 1);
+        img.addEventListener('click', function(){ window.open(src, '_blank'); });
+        var del = document.createElement('button');
+        del.type = 'button'; del.className = 'ac-img-del'; del.title = 'Supprimer'; del.textContent = '×';
+        del.addEventListener('click', function(){ c.images.splice(i, 1); saveCompany(); renderImages(); });
+        wrap.appendChild(img); wrap.appendChild(del);
+        imgBox.appendChild(wrap);
+      });
+    }
+    renderImages();
+    var imgInput = section.querySelector('[data-role="imginput"]');
+    section.querySelector('[data-role="addimg"]').addEventListener('click', function(){ imgInput.click(); });
+    imgInput.addEventListener('change', function(){
+      var files = Array.prototype.slice.call(imgInput.files || []);
+      imgInput.value = '';
+      files.reduce(function(chain, file){
+        return chain.then(function(){
+          return readAndResizeImage(file, 1000).then(function(url){ c.images.push(url); });
+        });
+      }, Promise.resolve()).then(function(){ saveCompany(); renderImages(); })
+        .catch(function(e){ console.error(e); alert('Une image n’a pas pu être ajoutée.'); });
+    });
+
     applyEditModeToSection(section);
   }
 
@@ -903,6 +994,8 @@
     if(h.indexOf('ac/') === 0){
       var pillar = renderAcPage(h.slice(3));
       if(pillar) showPage('page-ac', pillar);
+    } else if(h === 'entreprise'){
+      showPage('page-entreprise', 'entreprise');
     } else if(PAGE_DEFS[h]){
       showPage('page-' + h, h);
     } else {
@@ -914,7 +1007,7 @@
   function bindExport(){
     document.getElementById('exportBtn').addEventListener('click', function(){
       if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-      var data = JSON.stringify({home: state.home, pages: state.pages, acs: state.acs}).replace(/</g,'\u003c');
+      var data = JSON.stringify({home: state.home, pages: state.pages, acs: state.acs, company: state.company}).replace(/</g,'\u003c');
       var clone = document.documentElement.cloneNode(true);
       clone.querySelector('body').className = '';
       var eb = clone.querySelector('#editToggle'); if(eb) eb.remove();
@@ -950,6 +1043,7 @@
     Object.keys(PAGE_DEFS).forEach(function(k){
       applyEditModeToSection(document.getElementById('page-' + k));
     });
+    applyEditModeToSection(document.getElementById('page-entreprise'));
   }
   function applyEditModeToSection(section){
     section.querySelectorAll('[contenteditable]').forEach(function(el){
