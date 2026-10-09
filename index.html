@@ -273,6 +273,25 @@
   }
   .ac-practice{margin:0; padding-left:20px;}
   .ac-practice li{margin-bottom:10px; color:var(--ink); padding:2px 0;}
+  .ac-images{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:28px;
+  }
+  .ac-images:empty{display:none;}
+  .ac-img{position:relative; border:1px solid var(--line-strong); background:var(--panel);}
+  .ac-img img{display:block; width:100%; height:auto; cursor:zoom-in;}
+  .ac-img-del{
+    display:none; position:absolute; top:6px; right:6px; width:28px; height:28px;
+    background:var(--navy); color:#fff; border:none; cursor:pointer; font-size:1rem; line-height:1;
+  }
+  body.edit-mode .ac-img-del{display:block;}
+  .ac-img-del:hover{background:#B8402A;}
+  .ac-add-img{
+    display:none; margin-top:20px; background:transparent; border:1px dashed var(--line-strong);
+    color:var(--ink-soft); padding:12px 16px; font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem; cursor:pointer;
+  }
+  body.edit-mode .ac-add-img{display:inline-block;}
+  .ac-add-img:hover{border-color:var(--orange); color:var(--orange);}
   .ac-pager{
     display:flex; justify-content:space-between; gap:12px; margin-top:22px; flex-wrap:wrap;
   }
@@ -790,6 +809,9 @@
           '<li contenteditable="false" data-field="bullet1">' + escapeHtml(data.bullets[1]) + '</li>' +
           '<li contenteditable="false" data-field="bullet2">' + escapeHtml(data.bullets[2]) + '</li>' +
         '</ul>' +
+        '<div class="ac-images" data-role="images"></div>' +
+        '<button type="button" class="ac-add-img" data-role="addimg">+ Ajouter des images</button>' +
+        '<input type="file" accept="image/*" multiple data-role="imginput">' +
       '</div>' +
       '<div class="ac-pager"><span>' +
         (prev ? '<a href="#ac/' + encodeURIComponent(prev.code) + '">← ' + escapeHtml(prev.code) + '</a>' : '') +
@@ -809,6 +831,44 @@
       saveAcs();
     }
     [compEl, reformEl, b0, b1, b2].forEach(function(el){ el.addEventListener('blur', commit); });
+
+    // images (le bouton d'ajout et la suppression ne sont visibles qu'en mode « Modifier »)
+    if(!data.images) data.images = [];
+    var imgBox = section.querySelector('[data-role="images"]');
+    function renderImages(){
+      imgBox.innerHTML = '';
+      data.images.forEach(function(src, i){
+        var wrap = document.createElement('div');
+        wrap.className = 'ac-img';
+        var img = document.createElement('img');
+        img.src = src; img.alt = info.code + ' — image ' + (i + 1);
+        img.addEventListener('click', function(){ window.open(src, '_blank'); });
+        var del = document.createElement('button');
+        del.type = 'button'; del.className = 'ac-img-del'; del.title = 'Supprimer'; del.textContent = '×';
+        del.addEventListener('click', function(){
+          data.images.splice(i, 1);
+          saveAcs();
+          renderImages();
+        });
+        wrap.appendChild(img); wrap.appendChild(del);
+        imgBox.appendChild(wrap);
+      });
+    }
+    renderImages();
+    var imgInput = section.querySelector('[data-role="imginput"]');
+    section.querySelector('[data-role="addimg"]').addEventListener('click', function(){ imgInput.click(); });
+    imgInput.addEventListener('change', function(){
+      var files = Array.prototype.slice.call(imgInput.files || []);
+      imgInput.value = '';
+      files.reduce(function(chain, f){
+        return chain.then(function(){
+          return readAndResizeImage(f, 1000).then(function(url){ data.images.push(url); });
+        });
+      }, Promise.resolve()).then(function(){
+        saveAcs();
+        renderImages();
+      }).catch(function(e){ console.error(e); alert('Une image n’a pas pu être ajoutée.'); });
+    });
 
     applyEditModeToSection(section);
     return pillar;
