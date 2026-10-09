@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio QLIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E7E2D3;
+    --paper:#F3EFE3;
+    --panel:#DAD3BE;
+    --ink:#1D2320;
+    --ink-soft:#4B534C;
+    --navy:#1C2B3A;
+    --navy-soft:#324256;
+    --orange:#C9531A;
+    --orange-soft:#E07A3E;
+    --green:#3D6B4F;
+    --line:#B9AF93;
+    --line-strong:#1C2321;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brand,.tab,.pillar-label{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    letter-spacing:.01em;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  a{color:inherit;}
+
+  /* ---------- Topbar ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:24px;
+    padding:16px 28px;
+    background:var(--navy);
+    border-bottom:3px solid var(--orange);
+    flex-wrap:wrap;
+  }
+  .brand{
+    color:var(--paper);
+    font-size:1.15rem;
+    display:flex; align-items:center; gap:10px;
+    white-space:nowrap;
+  }
+  .brand .dot{width:10px;height:10px;background:var(--orange);display:inline-block;}
+  nav.tabs{
+    display:flex; gap:2px; flex-wrap:wrap; margin-left:auto;
+  }
+  .tab{
+    background:transparent;
+    border:1px solid transparent;
+    color:#C7CEDA;
+    font-size:.92rem;
+    padding:9px 14px;
+    cursor:pointer;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .tab:hover{ color:#fff; border-color:#3B4C63; }
+  .tab.active{
+    color:var(--navy);
+    background:var(--orange);
+  }
+  .edit-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.82rem;
+    background:transparent;
+    color:var(--paper);
+    border:1px solid #4A5A70;
+    padding:9px 14px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .edit-btn:hover{border-color:var(--orange); color:var(--orange-soft);}
+  .edit-btn.on{background:var(--green); border-color:var(--green); color:#fff;}
+  .export-btn{margin-left:8px;}
+  body.published .edit-btn, body.published .export-btn{display:none;}
+  #loginBtn, #syncStatus{display:none;}
+  body.remote #loginBtn{display:inline-block;}
+  body.remote.admin #syncStatus{display:inline-block;}
+  body.remote:not(.admin) #editToggle{display:none;}
+  body.remote .export-btn{display:none;}
+  #syncStatus{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#EFE9DA; margin-left:10px; white-space:nowrap;}
+  #loginModal{
+    position:fixed; inset:0; z-index:60; background:rgba(28,35,33,.6);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  #loginModal.hidden{display:none;}
+  #loginForm{
+    background:var(--paper); border:1px solid var(--line-strong); padding:28px 30px;
+    width:100%; max-width:360px; display:flex; flex-direction:column; gap:12px;
+  }
+  #loginForm h3{margin:0 0 4px; font-size:1.2rem; color:var(--navy);}
+  #loginForm input{
+    font:inherit; padding:9px 10px; border:1px solid var(--line-strong); background:#fff;
+  }
+  #loginForm .row{display:flex; gap:10px; justify-content:flex-end; margin-top:6px;}
+  #loginForm button{
+    font-family:'IBM Plex Mono',monospace; font-size:.8rem; padding:8px 14px; cursor:pointer;
+    border:1px solid var(--line-strong); background:transparent; color:var(--ink);
+  }
+  #loginForm button.primary{background:var(--orange); border-color:var(--orange); color:#fff;}
+  #loginError{color:#B8402A; font-size:.85rem; min-height:1.2em;}
+
+  /* ---------- Pages ---------- */
+  main{max-width:980px; margin:0 auto; padding:0 24px 90px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ---------- Home ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:40px;
+    padding:56px 0 40px;
+    border-bottom:1px solid var(--line);
+    align-items:center;
+  }
+  @media (max-width:720px){ .hero{grid-template-columns:1fr;} }
+  .hero h1{font-size:2.6rem; margin:0 0 6px; color:var(--navy); line-height:1.05;}
+  .hero .role{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--orange);
+    font-size:.95rem;
+    margin:0 0 22px;
+    letter-spacing:.01em;
+  }
+  .hero .intro{font-size:1.02rem; color:var(--ink-soft); max-width:52ch;}
+  .contact-list{
+    list-style:none; margin:22px 0 0; padding:0;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .contact-list li{
+    display:flex; gap:10px; font-size:.92rem; color:var(--ink);
+  }
+  .contact-list .contact-label{
+    font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--orange);
+    min-width:64px; text-transform:uppercase; letter-spacing:.02em; padding-top:2px;
+  }
+  .photo-wrap{
+    position:relative;
+    aspect-ratio:4/5;
+    background:var(--panel);
+    border:1px solid var(--line-strong);
+    overflow:hidden;
+  }
+  .photo-wrap img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-placeholder{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; font-size:.85rem; text-align:center; padding:20px;
+  }
+  .photo-edit-overlay{
+    position:absolute; inset:0; display:none;
+    align-items:flex-end; justify-content:center; padding:14px;
+    background:linear-gradient(to top, rgba(28,43,58,.75), transparent 60%);
+  }
+  body.edit-mode .photo-edit-overlay{display:flex;}
+  .photo-edit-overlay button{
+    background:var(--orange); color:#fff; border:none; padding:8px 14px;
+    font-family:'IBM Plex Mono',monospace; font-size:.78rem; cursor:pointer;
+  }
+
+  /* ---------- QLIO flow ---------- */
+  .flow{
+    display:flex; align-items:stretch; gap:0; margin:44px 0 12px; flex-wrap:wrap;
+  }
+  .flow-node{
+    flex:1; min-width:150px;
+    border:1px solid var(--line-strong);
+    background:var(--paper);
+    padding:18px 16px;
+    cursor:pointer;
+    position:relative;
+    transition:background .15s, transform .1s;
+  }
+  .flow-node + .flow-node{border-left:none;}
+  .flow-node:hover{background:var(--panel);}
+  .flow-node .code{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--orange); display:block; margin-bottom:6px;}
+  .flow-node .label{font-family:'Oswald',sans-serif; font-size:1rem; color:var(--navy);}
+  .flow-note{font-size:.85rem; color:var(--ink-soft); margin:0 0 40px;}
+
+  /* ---------- Editable fields ---------- */
+  [contenteditable="true"]{
+    outline:1px dashed transparent;
+    border-radius:1px;
+  }
+  body.edit-mode [contenteditable="true"]{
+    outline:1px dashed var(--orange-soft);
+    background:rgba(201,83,26,0.05);
+    cursor:text;
+  }
+  body.edit-mode [contenteditable="true"]:focus{
+    outline:1px solid var(--orange);
+    background:#fff;
+  }
+
+  /* ---------- Competency page ---------- */
+  .page-head{
+    padding:48px 0 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .pillar-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--orange);
+    letter-spacing:.02em;
+    display:block;
+    margin-bottom:6px;
+  }
+  .page-head h2{font-size:2rem; margin:0 0 14px; color:var(--navy);}
+  .page-head .desc{color:var(--ink-soft); max-width:64ch;}
+
+  /* ---------- AC sub-tabs ---------- */
+  /* ---------- sommaire des AC ---------- */
+  .sommaire-hint{color:var(--ink-soft); font-size:.9rem; margin:22px 0 0; font-style:italic;}
+  .lvl-row{
+    display:grid; grid-template-columns:minmax(230px,320px) 1fr; gap:24px; margin-top:20px;
+  }
+  @media (max-width:760px){ .lvl-row{grid-template-columns:1fr; gap:8px;} }
+  .lvl-box, .lvl-list{padding:20px 26px;}
+  .lvl-box{
+    text-align:center; display:flex; flex-direction:column; justify-content:center; gap:4px;
+  }
+  .lvl-num{font-family:'Oswald',sans-serif; font-weight:600; font-size:1.5rem; line-height:1.2;}
+  .lvl-title{font-size:1.02rem; font-weight:500; line-height:1.35;}
+  .lvl-list{display:flex; align-items:center;}
+  .lvl-list ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; width:100%;}
+  .lvl-list a{
+    color:inherit; text-decoration:none; display:block; padding:3px 0;
+    border-bottom:1px solid transparent; font-size:.97rem;
+  }
+  .lvl-list a:hover{border-bottom-color:currentColor;}
+  .lvl-list a .code{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:.88rem; margin-right:4px;}
+
+  /* ---------- page d'un AC ---------- */
+  .back-link{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:.8rem;
+    color:var(--ink-soft); text-decoration:none; margin-bottom:22px;
+  }
+  .back-link:hover{color:var(--orange);}
+  .ac-card{
+    border:1px solid var(--line-strong); border-left-width:10px;
+    background:var(--paper); padding:32px 36px 38px;
+  }
+  .ac-code-field{
+    font-family:'IBM Plex Mono',monospace; font-size:.85rem; color:var(--orange); margin-bottom:8px;
+  }
+  .ac-title{
+    font-size:1.6rem; color:var(--navy); margin:0 0 6px;
+    font-family:'Oswald',sans-serif; font-weight:600;
+  }
+  .ac-level{color:var(--ink-soft); font-size:.9rem; margin-bottom:22px;}
+  .ac-competence{
+    font-weight:600; color:var(--navy-soft); font-size:.98rem; margin-bottom:18px; padding:2px 0;
+  }
+  .ac-reformulation{color:var(--ink); margin:0 0 26px; max-width:70ch;}
+  .ac-practice-label{
+    font-family:'IBM Plex Mono',monospace; font-size:.78rem; letter-spacing:.05em;
+    color:var(--ink-soft); text-transform:uppercase; margin-bottom:12px;
+  }
+  .ac-practice{margin:0; padding-left:20px;}
+  .ac-practice li{margin-bottom:10px; color:var(--ink); padding:2px 0;}
+  .ac-pager{
+    display:flex; justify-content:space-between; gap:12px; margin-top:22px; flex-wrap:wrap;
+  }
+  .ac-pager a{
+    font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--ink-soft);
+    text-decoration:none; border:1px solid var(--line-strong); padding:8px 12px; max-width:48%;
+  }
+  .ac-pager a:hover{border-color:var(--orange); color:var(--orange);}
+
+  /* ---------- Loading ---------- */
+  #loadingOverlay{
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; color:var(--ink-soft);
+    z-index:200;
+  }
+  #loadingOverlay.hidden{display:none;}
+
+  input[type=file]{display:none;}
+
+  footer{
+    text-align:center; padding:26px 0 10px; color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem;
+  }
+</style>
+</head>
+<body>
+
+<div id="loginModal" class="hidden">
+  <form id="loginForm">
+    <h3>Connexion administrateur</h3>
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" required>
+    <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password" required>
+    <div id="loginError"></div>
+    <div class="row"><button type="button" id="loginCancel">Annuler</button><button type="submit" class="primary">Se connecter</button></div>
+  </form>
+</div>
+
+<div id="loadingOverlay">chargement du portfolio…</div>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>Portfolio QLIO</div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="accueil">Accueil</button>
+    <button class="tab" data-tab="qualite">Compétences Qualité</button>
+    <button class="tab" data-tab="logistique">Compétences Logistique industrielle</button>
+    <button class="tab" data-tab="organisation">Compétences Organisation</button>
+    <button class="tab" data-tab="mp">Option MP</button>
+  </nav>
+  <span id="syncStatus"></span>
+  <button class="edit-btn" id="loginBtn">Connexion</button>
+  <button class="edit-btn" id="editToggle">Modifier</button>
+  <button class="edit-btn export-btn" id="exportBtn" title="Télécharge une version prête à mettre en ligne">Exporter</button>
+</header>
+
+<main id="app">
+
+  <!-- ACCUEIL -->
+  <section class="page active" id="page-accueil">
+    <div class="hero">
+      <div>
+        <h1 id="home-nom" contenteditable="false">Prénom Nom</h1>
+        <p class="role" id="home-titre" contenteditable="false">Étudiant·e BUT Qualité, Logistique industrielle et Organisation</p>
+        <p class="intro" id="home-intro" contenteditable="false">Présentez-vous ici&nbsp;: votre parcours, l'IUT et le site où vous étudiez, vos alternances ou stages, et ce qui vous motive dans la qualité, la logistique et l'organisation industrielle. Cliquez sur « Modifier » en haut à droite pour changer ce texte.</p>
+        <ul class="contact-list">
+          <li><span class="contact-label">Email</span><span id="home-email" contenteditable="false">prenom.nom@exemple.fr</span></li>
+          <li><span class="contact-label">Tél.</span><span id="home-tel" contenteditable="false">06 00 00 00 00</span></li>
+        </ul>
+      </div>
+      <div class="photo-wrap" id="home-photo-wrap">
+        <div class="photo-placeholder" id="home-photo-placeholder">Ajoutez votre photo en mode « Modifier »</div>
+        <img id="home-photo-img" style="display:none;">
+        <div class="photo-edit-overlay">
+          <button id="home-photo-btn" type="button">Changer la photo</button>
+        </div>
+        <input type="file" id="home-photo-input" accept="image/*">
+      </div>
+    </div>
+
+    <div class="flow" id="home-flow">
+      <div class="flow-node" data-goto="qualite"><span class="code">01</span><span class="label">Qualité</span></div>
+      <div class="flow-node" data-goto="logistique"><span class="code">02</span><span class="label">Logistique industrielle</span></div>
+      <div class="flow-node" data-goto="organisation"><span class="code">03</span><span class="label">Organisation</span></div>
+      <div class="flow-node" data-goto="mp"><span class="code">04</span><span class="label">Option MP</span></div>
+    </div>
+    <p class="flow-note">Les quatre piliers du BUT QLIO — cliquez sur un pilier pour consulter les apprentissages critiques associés.</p>
+  </section>
+
+  <!-- COMPETENCY PAGES: filled by JS -->
+  <section class="page" id="page-qualite"></section>
+  <section class="page" id="page-logistique"></section>
+  <section class="page" id="page-organisation"></section>
+  <section class="page" id="page-mp"></section>
+  <section class="page" id="page-ac"></section>
+
+</main>
+
+<footer>Portfolio QLIO — contenu enregistré automatiquement</footer>
+
+<script>
+(function(){
+
+  // ====== SYNCHRONISATION EN LIGNE (optionnelle) ======
+  // Renseigne ces deux valeurs (voir le guide Supabase) pour que le site en ligne
+  // se mette à jour automatiquement quand tu modifies. Laisse vide pour garder
+  // le fonctionnement actuel (enregistrement dans le navigateur + export).
+  var CONFIG = { url: 'https://uiqihdwbqfubnmedirpt.supabase.co', key: 'sb_publishable_Iakx2rZQljRz34KTiUNtjg_Q6_5SmD8' };
+  var REMOTE = (CONFIG.url && CONFIG.key) ? CONFIG : null;
+
+  var PAGE_DEFS = {
+    qualite:      {label:"Compétence — Qualité",              desc:"Renseignez ici les apprentissages critiques rattachés à la compétence Qualité (maîtrise des processus, outils qualité, amélioration continue, audits…)."},
+    logistique:   {label:"Compétence — Logistique industrielle", desc:"Renseignez ici les apprentissages critiques rattachés à la compétence Logistique industrielle (flux, approvisionnement, gestion des stocks, production…)."},
+    organisation: {label:"Compétence — Organisation",          desc:"Renseignez ici les apprentissages critiques rattachés à la compétence Organisation (pilotage, gestion de projet, ressources, performance…)."},
+    mp:           {label:"Option — Management de la Production", desc:"Renseignez ici les apprentissages critiques rattachés à l'option Management de la Production (MP)."}
+  };
+
+  var state = {
+    home: {nom:"Prénom Nom", titre:"Étudiant·e BUT Qualité, Logistique industrielle et Organisation",
+           intro:"Présentez-vous ici : votre parcours, l'IUT et le site où vous étudiez, vos alternances ou stages, et ce qui vous motive dans la qualité, la logistique et l'organisation industrielle. Cliquez sur « Modifier » en haut à droite pour changer ce texte.",
+           email:"prenom.nom@exemple.fr", tel:"06 00 00 00 00",
+           photo:null},
+    pages: {
+      qualite:      {desc:PAGE_DEFS.qualite.desc},
+      logistique:   {desc:PAGE_DEFS.logistique.desc},
+      organisation: {desc:PAGE_DEFS.organisation.desc},
+      mp:           {desc:PAGE_DEFS.mp.desc}
+    },
+    acs: {}
+  };
+
+  // Référentiel : niveaux et apprentissages critiques de chaque compétence / option
+  var CATALOG = {
+    qualite: [
+      {niv:'Niveau 2', titre:'Maîtriser la qualité dans une entreprise en qualité de technicien', bg:'#F29696', fg:'#1C2321', acs:[
+        ['AC21.01','Effectuer une démarche d’amélioration continue'],
+        ['AC21.02','Collecter, analyser et exploiter des données'],
+        ['AC21.03','Mesurer et améliorer la performance'],
+        ['AC21.04','Animer des équipes sur un projet'],
+        ['AC21.05','Organiser et mettre en oeuvre un audit'],
+        ['AC21.06','Fiabiliser la mesure']]},
+      {niv:'Niveau 3', titre:'Piloter l’entreprise par la qualité en tant que cadre intermédiaire', bg:'#BA0F0F', fg:'#FFFFFF', acs:[
+        ['AC31.01','Déployer un système de management par la qualité'],
+        ['AC31.02','Assurer la compétence des équipes'],
+        ['AC31.03','Planifier et conduire des audits']]}
+    ],
+    logistique: [
+      {niv:'Niveau 2', titre:'Appliquer les techniques de gestion des flux en qualité de technicien', bg:'#EFA37C', fg:'#1C2321', acs:[
+        ['AC22.01','Paramétrer les stocks'],
+        ['AC22.02','Contrôler et valider des données générées par le système d’information'],
+        ['AC22.03','Ordonnancer et lancer la production'],
+        ['AC22.04','Planifier à moyen/long terme'],
+        ['AC22.05','Piloter en flux tiré'],
+        ['AC22.06','Sélectionner un partenaire externe']]},
+      {niv:'Niveau 3', titre:'Améliorer la circulation des flux pour rendre le système plus efficient en qualité de cadre intermédiaire', bg:'#F08C57', fg:'#1C2321', acs:[
+        ['AC32.01','Piloter les flux par les contraintes'],
+        ['AC32.02','Sélectionner le système d’information en fonction du contexte'],
+        ['AC32.03','Réagir face à des aléas de production'],
+        ['AC32.04','Adapter le mode de pilotage des flux au contexte']]}
+    ],
+    organisation: [
+      {niv:'Niveau 2', titre:'Organiser et améliorer un système de production en qualité de technicien', bg:'#F3D774', fg:'#1C2321', acs:[
+        ['AC23.01','Améliorer un poste de travail dans son environnement de production et d’approvisionnement'],
+        ['AC23.02','Implanter à l’aide de méthodes impactant l’organisation de production'],
+        ['AC23.03','Calculer des coûts de production pour mesurer la rentabilité d’un projet ou d’un investissement'],
+        ['AC23.04','Modéliser pour dimensionner les ressources d’un système de production'],
+        ['AC23.05','Gérer un projet dans le cadre d’une démarche d’amélioration']]},
+      {niv:'Niveau 3', titre:'Faire évoluer un système de production en qualité de cadre intermédiaire', bg:'#F0BA33', fg:'#1C2321', acs:[
+        ['AC33.01','Organiser une unité de production'],
+        ['AC33.02','Organiser un projet d’implantation dans des conditions réelles'],
+        ['AC33.03','Piloter un projet'],
+        ['AC33.04','Faire évoluer l’entreprise dans le cadre de projets Lean management']]}
+    ],
+    mp: [
+      {niv:'Niveau 1', titre:'Organiser l’activité d’une équipe de production et accompagner les collaborateurs', bg:'#ADD68A', fg:'#1C2321', acs:[
+        ['AC24.01MP','Gérer et animer les activités de ses collaborateurs'],
+        ['AC24.02MP','Communiquer avec ses collaborateurs'],
+        ['AC24.03MP','Créer et entretenir un environnement de travail sécurisé'],
+        ['AC24.04MP','Construire et suivre un budget']]},
+      {niv:'Niveau 2', titre:'Se positionner en tant que responsable d’une équipe', bg:'#8BC85C', fg:'#1C2321', acs:[
+        ['AC34.01MP','Résoudre des problèmes de flux'],
+        ['AC34.02MP','Développer les compétences et évaluer les performances de son équipe'],
+        ['AC34.03MP','Animer et améliorer la dynamique de son équipe'],
+        ['AC34.04MP','Adapter son style de management']]}
+    ]
+  };
+
+  // liste à plat de tous les AC d'un pilier (pour retrouver un AC et naviguer précédent/suivant)
+  function flatAcs(pillar){
+    var out = [];
+    CATALOG[pillar].forEach(function(lvl){
+      lvl.acs.forEach(function(a){ out.push({pillar:pillar, lvl:lvl, code:a[0], titre:a[1]}); });
+    });
+    return out;
+  }
+  function findAc(code){
+    var keys = Object.keys(CATALOG);
+    for(var i=0;i<keys.length;i++){
+      var list = flatAcs(keys[i]);
+      for(var j=0;j<list.length;j++){
+        if(list[j].code === code) return {info:list[j], list:list, index:j};
+      }
+    }
+    return null;
+  }
+  function getAcData(code, lvl){
+    if(!state.acs[code]){
+      state.acs[code] = {
+        competence: lvl.titre,
+        reformulation: 'Reformule ici, avec tes mots, ce que cet apprentissage critique attend de toi cette année.',
+        bullets: [
+          'SAÉ ou situation où tu as travaillé cet AC',
+          'Ce que tu as concrètement produit ou décidé',
+          'Ce que tu en retiens / ce que tu dois encore consolider'
+        ]
+      };
+    }
+    return state.acs[code];
+  }
+
+  var editMode = false;
+  var uid = function(){ return 'ac_' + Math.random().toString(36).slice(2,10); };
+
+  // ---------- storage helpers (browser localStorage — works standalone, no external service needed) ----------
+  var STORAGE_PREFIX = 'qlio_portfolio_';
+  function loadKey(key, fallback){
+    try{
+      var raw = localStorage.getItem(STORAGE_PREFIX + key);
+      if(raw){ return JSON.parse(raw); }
+      return fallback;
+    }catch(e){
+      console.error('Lecture impossible pour', key, e);
+      return fallback;
+    }
+  }
+  function saveKey(key, value){
+    if(!REMOTE && window.PUBLISHED_DATA) return;
+    try{
+      localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+    }catch(e){
+      console.error('Échec de sauvegarde pour', key, e);
+      alert('Impossible d’enregistrer (stockage local plein ou navigation privée). Vos dernières modifications risquent de ne pas être conservées.');
+    }
+    scheduleRemotePush();
+  }
+  function saveHome(){ saveKey('home', state.home); }
+  function savePage(key){ saveKey('page:'+key, state.pages[key]); }
+  function saveAcs(){ saveKey('acs', state.acs); }
+
+  // ---------- image resize helper ----------
+  function readAndResizeImage(file, maxW){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){ reject(new Error('lecture échouée')); };
+      reader.onload = function(){
+        var img = new Image();
+        img.onerror = function(){ reject(new Error('image invalide')); };
+        img.onload = function(){
+          var scale = Math.min(1, maxW / img.width);
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---------- synchronisation en ligne (Supabase, via l'API REST — aucune bibliothèque) ----------
+  var session = null;      // {access, refresh} quand l'administrateur est connecté
+  var remoteWasEmpty = false;
+  var pushTimer = null;
+
+  function setStatus(txt){ var el = document.getElementById('syncStatus'); if(el) el.textContent = txt; }
+  function anonHeaders(token){
+    var h = {'apikey': REMOTE.key, 'Content-Type': 'application/json'};
+    // les nouvelles clés « publishable » (sb_...) ne se passent que dans apikey
+    if(token) h['Authorization'] = 'Bearer ' + token;
+    else if(REMOTE.key.indexOf('eyJ') === 0) h['Authorization'] = 'Bearer ' + REMOTE.key;
+    return h;
+  }
+  function fetchRemote(){
+    return fetch(REMOTE.url + '/rest/v1/portfolio?id=eq.main&select=data', {headers: anonHeaders()})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(rows){ return rows.length ? rows[0].data : null; });
+  }
+  function authRequest(grant, body){
+    return fetch(REMOTE.url + '/auth/v1/token?grant_type=' + grant, {
+      method:'POST', headers:{'apikey': REMOTE.key, 'Content-Type':'application/json'}, body: JSON.stringify(body)
+    }).then(function(r){
+      return r.json().then(function(j){
+        if(!r.ok) throw new Error(j.error_description || j.msg || 'Connexion refusée');
+        return j;
+      });
+    });
+  }
+  function storeSession(j){
+    session = {access: j.access_token, refresh: j.refresh_token};
+    try{ localStorage.setItem(STORAGE_PREFIX + 'refresh', j.refresh_token); }catch(e){}
+    document.body.classList.add('admin');
+    document.getElementById('loginBtn').textContent = 'Déconnexion';
+    setStatus('✓ Connecté');
+  }
+  function refreshSession(){
+    var rt = (session && session.refresh) || localStorage.getItem(STORAGE_PREFIX + 'refresh');
+    if(!rt) return Promise.reject(new Error('Pas de session'));
+    return authRequest('refresh_token', {refresh_token: rt}).then(storeSession);
+  }
+  function scheduleRemotePush(){
+    if(!REMOTE || !session) return;
+    clearTimeout(pushTimer);
+    setStatus('Modifications…');
+    pushTimer = setTimeout(function(){ pushRemote(false); }, 800);
+  }
+  function pushRemote(retried){
+    if(!REMOTE || !session) return Promise.resolve();
+    setStatus('Enregistrement…');
+    var headers = anonHeaders(session.access);
+    headers['Prefer'] = 'resolution=merge-duplicates,return=minimal';
+    return fetch(REMOTE.url + '/rest/v1/portfolio?on_conflict=id', {
+      method:'POST', headers: headers,
+      body: JSON.stringify({id:'main', data:{home: state.home, pages: state.pages, acs: state.acs}})
+    }).then(function(r){
+      if(r.status === 401 && !retried){ return refreshSession().then(function(){ return pushRemote(true); }); }
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      setStatus('✓ En ligne');
+    }).catch(function(){
+      setStatus('⚠ Non enregistré en ligne');
+    });
+  }
+  function bindLogin(){
+    var modal = document.getElementById('loginModal');
+    var err = document.getElementById('loginError');
+    document.getElementById('loginBtn').addEventListener('click', function(){
+      if(session){
+        try{ localStorage.removeItem(STORAGE_PREFIX + 'refresh'); }catch(e){}
+        location.reload();
+        return;
+      }
+      err.textContent = '';
+      modal.classList.remove('hidden');
+      document.getElementById('loginEmail').focus();
+    });
+    document.getElementById('loginCancel').addEventListener('click', function(){ modal.classList.add('hidden'); });
+    document.getElementById('loginForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      err.textContent = 'Connexion…';
+      authRequest('password', {
+        email: document.getElementById('loginEmail').value.trim(),
+        password: document.getElementById('loginPassword').value
+      }).then(function(j){
+        storeSession(j);
+        modal.classList.add('hidden');
+        document.getElementById('loginPassword').value = '';
+        if(remoteWasEmpty){ pushRemote(false); remoteWasEmpty = false; }
+      }).catch(function(ex){ err.textContent = ex.message; });
+    });
+    // reconnexion automatique si une session existe déjà sur cet appareil
+    if(localStorage.getItem(STORAGE_PREFIX + 'refresh')){
+      refreshSession().catch(function(){ try{ localStorage.removeItem(STORAGE_PREFIX + 'refresh'); }catch(e){} });
+    }
+  }
+
+  // ---------- init ----------
+  function init(){
+    if(REMOTE){
+      document.body.classList.add('remote');
+      fetchRemote().then(function(d){ remoteWasEmpty = !d; boot(d); })
+                   .catch(function(){ boot(null); });
+    } else {
+      boot(null);
+    }
+  }
+  function boot(remoteData){
+    var staticPub = !REMOTE && !!window.PUBLISHED_DATA;
+    var pub = remoteData || (staticPub ? window.PUBLISHED_DATA : null);
+    if(staticPub) document.body.classList.add('published');
+    var homeData = pub ? pub.home : loadKey('home', null);
+    if(homeData) state.home = homeData;
+
+    var keys = Object.keys(PAGE_DEFS);
+    keys.forEach(function(k){
+      var pd = pub ? (pub.pages && pub.pages[k]) : loadKey('page:'+k, null);
+      if(pd && pd.desc) state.pages[k].desc = pd.desc;
+    });
+    var acData = pub ? pub.acs : loadKey('acs', null);
+    if(acData) state.acs = acData;
+
+    renderHome();
+    keys.forEach(renderCompetencyPage);
+    bindNav();
+    if(!staticPub){ bindEditToggle(); if(!REMOTE) bindExport(); }
+    if(REMOTE) bindLogin();
+    bindHomeHandlers();
+    window.addEventListener('hashchange', route);
+    route();
+
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+
+  // ---------- home render ----------
+  function renderHome(){
+    var nom = document.getElementById('home-nom');
+    var titre = document.getElementById('home-titre');
+    var intro = document.getElementById('home-intro');
+    nom.textContent = state.home.nom;
+    titre.textContent = state.home.titre;
+    intro.textContent = state.home.intro;
+    document.getElementById('home-email').textContent = state.home.email;
+    document.getElementById('home-tel').textContent = state.home.tel;
+
+    var img = document.getElementById('home-photo-img');
+    var ph = document.getElementById('home-photo-placeholder');
+    if(state.home.photo){
+      img.src = state.home.photo;
+      img.style.display = 'block';
+      ph.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      ph.style.display = 'flex';
+    }
+  }
+
+  function bindHomeHandlers(){
+    var nom = document.getElementById('home-nom');
+    var titre = document.getElementById('home-titre');
+    var intro = document.getElementById('home-intro');
+    nom.addEventListener('blur', function(){ state.home.nom = nom.textContent.trim() || 'Prénom Nom'; saveHome(); });
+    titre.addEventListener('blur', function(){ state.home.titre = titre.textContent.trim(); saveHome(); });
+    intro.addEventListener('blur', function(){ state.home.intro = intro.textContent.trim(); saveHome(); });
+
+    var email = document.getElementById('home-email');
+    var tel = document.getElementById('home-tel');
+    email.addEventListener('blur', function(){ state.home.email = email.textContent.trim(); saveHome(); });
+    tel.addEventListener('blur', function(){ state.home.tel = tel.textContent.trim(); saveHome(); });
+
+    var btn = document.getElementById('home-photo-btn');
+    var input = document.getElementById('home-photo-input');
+    btn.addEventListener('click', function(){ input.click(); });
+    input.addEventListener('change', async function(){
+      if(!input.files || !input.files[0]) return;
+      try{
+        var dataUrl = await readAndResizeImage(input.files[0], 900);
+        state.home.photo = dataUrl;
+        renderHome();
+        saveHome();
+      }catch(e){ console.error(e); }
+      input.value = '';
+    });
+
+    document.getElementById('home-flow').addEventListener('click', function(e){
+      var node = e.target.closest('.flow-node');
+      if(node) location.hash = '#' + node.getAttribute('data-goto');
+    });
+  }
+
+  // ---------- competency pages ----------
+  function renderCompetencyPage(key){
+    var section = document.getElementById('page-' + key);
+    var def = PAGE_DEFS[key];
+    var pageState = state.pages[key];
+
+    var rows = CATALOG[key].map(function(lvl){
+      var links = lvl.acs.map(function(a){
+        return '<li><a href="#ac/' + encodeURIComponent(a[0]) + '"><span class="code">' + escapeHtml(a[0]) + '</span>| ' + escapeHtml(a[1]) + '</a></li>';
+      }).join('');
+      return '<div class="lvl-row">' +
+        '<div class="lvl-box" style="background:' + lvl.bg + ';color:' + lvl.fg + ';">' +
+          '<div class="lvl-num">' + escapeHtml(lvl.niv) + '</div>' +
+          '<div class="lvl-title">' + escapeHtml(lvl.titre) + '</div>' +
+        '</div>' +
+        '<div class="lvl-list" style="background:' + lvl.bg + ';color:' + lvl.fg + ';"><ul>' + links + '</ul></div>' +
+      '</div>';
+    }).join('');
+
+    section.innerHTML =
+      '<div class="page-head">' +
+        '<span class="pillar-label">Pilier BUT QLIO</span>' +
+        '<h2>' + escapeHtml(def.label.split('— ')[1] || def.label) + '</h2>' +
+        '<p class="desc" contenteditable="false" data-role="desc">' + escapeHtml(pageState.desc) + '</p>' +
+      '</div>' + rows +
+      '<p class="sommaire-hint">Clique sur un apprentissage critique pour ouvrir sa page.</p>';
+
+    var descEl = section.querySelector('[data-role="desc"]');
+    descEl.addEventListener('blur', function(){
+      pageState.desc = descEl.textContent.trim();
+      savePage(key);
+    });
+    applyEditModeToSection(section);
+  }
+
+  function renderAcPage(code){
+    var found = findAc(code);
+    if(!found){ location.hash = '#accueil'; return false; }
+    var info = found.info, lvl = info.lvl, pillar = info.pillar;
+    var data = getAcData(code, lvl);
+    var section = document.getElementById('page-ac');
+    var prev = found.list[found.index - 1], next = found.list[found.index + 1];
+
+    section.innerHTML =
+      '<a class="back-link" href="#' + pillar + '">← Retour au sommaire · ' + escapeHtml(PAGE_DEFS[pillar].label.split('— ')[1] || PAGE_DEFS[pillar].label) + '</a>' +
+      '<div class="ac-card" style="border-left-color:' + lvl.bg + ';">' +
+        '<div class="ac-code-field">' + escapeHtml(info.code) + '</div>' +
+        '<h2 class="ac-title">' + escapeHtml(info.titre) + '</h2>' +
+        '<div class="ac-level">' + escapeHtml(lvl.niv) + ' — ' + escapeHtml(lvl.titre) + '</div>' +
+        '<div class="ac-competence" contenteditable="false" data-field="competence">' + escapeHtml(data.competence) + '</div>' +
+        '<p class="ac-reformulation" contenteditable="false" data-field="reformulation">' + escapeHtml(data.reformulation) + '</p>' +
+        '<div class="ac-practice-label">En pratique</div>' +
+        '<ul class="ac-practice">' +
+          '<li contenteditable="false" data-field="bullet0">' + escapeHtml(data.bullets[0]) + '</li>' +
+          '<li contenteditable="false" data-field="bullet1">' + escapeHtml(data.bullets[1]) + '</li>' +
+          '<li contenteditable="false" data-field="bullet2">' + escapeHtml(data.bullets[2]) + '</li>' +
+        '</ul>' +
+      '</div>' +
+      '<div class="ac-pager"><span>' +
+        (prev ? '<a href="#ac/' + encodeURIComponent(prev.code) + '">← ' + escapeHtml(prev.code) + '</a>' : '') +
+      '</span><span>' +
+        (next ? '<a href="#ac/' + encodeURIComponent(next.code) + '">' + escapeHtml(next.code) + ' →</a>' : '') +
+      '</span></div>';
+
+    var compEl = section.querySelector('[data-field="competence"]');
+    var reformEl = section.querySelector('[data-field="reformulation"]');
+    var b0 = section.querySelector('[data-field="bullet0"]');
+    var b1 = section.querySelector('[data-field="bullet1"]');
+    var b2 = section.querySelector('[data-field="bullet2"]');
+    function commit(){
+      data.competence = compEl.textContent.trim();
+      data.reformulation = reformEl.textContent.trim();
+      data.bullets = [b0.textContent.trim(), b1.textContent.trim(), b2.textContent.trim()];
+      saveAcs();
+    }
+    [compEl, reformEl, b0, b1, b2].forEach(function(el){ el.addEventListener('blur', commit); });
+
+    applyEditModeToSection(section);
+    return pillar;
+  }
+
+  function escapeHtml(str){
+    var d = document.createElement('div');
+    d.textContent = str == null ? '' : str;
+    return d.innerHTML;
+  }
+
+  // ---------- nav ----------
+  function bindNav(){
+    document.getElementById('tabs').addEventListener('click', function(e){
+      var btn = e.target.closest('.tab');
+      if(!btn) return;
+      var tab = btn.getAttribute('data-tab');
+      if(location.hash === '#' + tab){ route(); } else { location.hash = '#' + tab; }
+    });
+  }
+  function showPage(pageId, tab){
+    document.querySelectorAll('.tab').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+    });
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.toggle('active', p.id === pageId);
+    });
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  }
+  function route(){
+    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if(h.indexOf('ac/') === 0){
+      var pillar = renderAcPage(h.slice(3));
+      if(pillar) showPage('page-ac', pillar);
+    } else if(PAGE_DEFS[h]){
+      showPage('page-' + h, h);
+    } else {
+      showPage('page-accueil', 'accueil');
+    }
+  }
+
+  // ---------- export (version publiable) ----------
+  function bindExport(){
+    document.getElementById('exportBtn').addEventListener('click', function(){
+      if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      var data = JSON.stringify({home: state.home, pages: state.pages, acs: state.acs}).replace(/</g,'\u003c');
+      var clone = document.documentElement.cloneNode(true);
+      clone.querySelector('body').className = '';
+      var eb = clone.querySelector('#editToggle'); if(eb) eb.remove();
+      var xb = clone.querySelector('#exportBtn'); if(xb) xb.remove();
+      var inject = document.createElement('script');
+      inject.textContent = 'window.PUBLISHED_DATA = ' + data + ';';
+      var firstScript = clone.querySelector('body script');
+      firstScript.parentNode.insertBefore(inject, firstScript);
+      var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+      var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    });
+  }
+
+  // ---------- edit mode ----------
+  function bindEditToggle(){
+    document.getElementById('editToggle').addEventListener('click', function(){
+      editMode = !editMode;
+      document.body.classList.toggle('edit-mode', editMode);
+      this.textContent = editMode ? 'Terminer' : 'Modifier';
+      this.classList.toggle('on', editMode);
+      applyEditModeAll();
+    });
+  }
+  function applyEditModeAll(){
+    document.querySelectorAll('#page-accueil [contenteditable]').forEach(function(el){
+      el.setAttribute('contenteditable', editMode ? 'true' : 'false');
+    });
+    Object.keys(PAGE_DEFS).forEach(function(k){
+      applyEditModeToSection(document.getElementById('page-' + k));
+    });
+  }
+  function applyEditModeToSection(section){
+    section.querySelectorAll('[contenteditable]').forEach(function(el){
+      el.setAttribute('contenteditable', editMode ? 'true' : 'false');
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
