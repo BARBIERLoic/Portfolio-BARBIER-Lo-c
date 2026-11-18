@@ -1,0 +1,24 @@
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # Tous les 2 jours à 08:00 UTC
+    - cron: "0 8 */2 * *"
+  workflow_dispatch: # permet de le lancer à la main pour tester
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Requête vers la base Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_TABLE: ${{ vars.SUPABASE_TABLE }}
+        run: |
+          curl --fail --silent --show-error \
+            "$SUPABASE_URL/rest/v1/$SUPABASE_TABLE?select=*&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -o /dev/null
+          echo "Ping OK"
